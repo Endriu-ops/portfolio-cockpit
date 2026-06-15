@@ -214,8 +214,9 @@ def price_matrix(weights, period):
     pm = pm.dropna(how="all").ffill().dropna()
 
     return pm
-def backtestpm = price_matrix(weights, period)
-
+def backtest(weights, period="10y"):
+    pm = price_matrix(weights, period)
+    
     if pm.empty or not isinstance(pm.index, pd.DatetimeIndex):
         return pd.Series(dtype=float)
 
