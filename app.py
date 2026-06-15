@@ -1,4 +1,4 @@
-import os, math, json, sqlite3, requests
+import os, math, json, sqlite3, requestfs
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -193,21 +193,58 @@ def real_table(df, targets, band):
 def normalize(d):
     s=sum(d.values()); return {k:v/s for k,v in d.items() if v>0}
 def price_matrix(weights, period):
-    frames=[]
+    frames = []
     for t in weights:
-        df=hist(t,period)
-        if not df.empty: frames.append(df["Close"].rename(t))
-    return pd.concat(frames,axis=1).dropna(how="all").ffill().dropna() if frames else pd.DataFrame()
-def backtest(weights, period="10y"):
-    pm=price_matrix(weights,period)
-    if pm.empty: return pd.Series(dtype=float)
-    rets=pm.resample("M").last().pct_change().dropna()
-    if rets.empty: return pd.Series(dtype=float)
-    w=pd.Series(weights).reindex(rets.columns).fillna(0); w=w/w.sum(); cur=w.copy(); val=1; out=[]
-    for i,(dt,r) in enumerate(rets.iterrows(),1):
-        val*=1+float((cur*r).sum()); out.append((dt,val)); cur=cur*(1+r); cur=cur/cur.sum()
-        if i%12==0: cur=w.copy()
-    return pd.Series([v for d,v in out],index=[d for d,v in out])
+        df = hist(t, period)
+        if not df.empty and "Close" in df.columns:
+            s = df["Close"].copy()
+            s.index = pd.to_datetime(s.index, errors="coerce")
+            s = s[~s.index.isna()]
+            s = s.sort_index()
+            frames.append(s.rename(t))
+
+    if not frames:
+        return pd.DataFrame()
+
+    pm = pd.concat(frames, axis=1)
+    pm.index = pd.to_datetime(pm.index, errors="coerce")
+    pm = pm[~pm.index.isna()]
+    pm = pm.sort_index()
+    pm = pm.apply(pd.to_numeric, errors="coerce")
+    pm = pm.dropna(how="all").ffill().dropna()
+
+    return pm
+def backtestpm = price_matrix(weights, period)
+
+    if pm.empty or not isinstance(pm.index, pd.DatetimeIndex):
+        return pd.Series(dtype=float)
+
+    rets = pm.resample("ME").last().pct_change().dropna()
+
+    if rets.empty:
+        return pd.Series(dtype=float)
+
+    w = pd.Series(weights).reindex(rets.columns).fillna(0)
+
+    if w.sum() == 0:
+        return pd.Series(dtype=float)
+
+    w = w / w.sum()
+    cur = w.copy()
+    val = 1.0
+    out = []
+
+    for i, (dt, r) in enumerate(rets.iterrows(), 1):
+        val *= 1 + float((cur * r).sum())
+        out.append((dt, val))
+
+        cur = cur * (1 + r)
+        cur = cur / cur.sum()
+
+        if i % 12 == 0:
+            cur = w.copy()
+
+    return pd.Series([v for d, v in out], index=[d for d, v in out])
 def stats(eq):
     if eq.empty or len(eq)<3: return {}
     r=eq.pct_change().dropna(); years=len(r)/12; cagr=(eq.iloc[-1]/eq.iloc[0])**(1/years)-1; vv=r.std()*math.sqrt(12); dd=eq/eq.cummax()-1
