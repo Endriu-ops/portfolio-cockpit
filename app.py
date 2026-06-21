@@ -773,8 +773,22 @@ def drift_monitor_table(real_df):
         "LOW"
     )
 )
-                        np.where(abs(float(out["deviation_pp"])) >= 5, "MEDIUM", "LOW"))
-    return out.sort_values("deviation_pp", key=lambda s: s.abs(), ascending=False)
+def drift_monitor_table(real_df):
+    if real_df is None or real_df.empty:
+        return pd.DataFrame()
+
+    cols = ["ticker", "current_weight", "target_weight", "deviation_pp", "action", "trade_value"]
+    out = real_df[cols].copy()
+
+    dev_abs = out["deviation_pp"].abs()
+
+    out["severity"] = np.where(
+        dev_abs >= 7,
+        "HIGH",
+        np.where(dev_abs >= 5, "MEDIUM", "LOW")
+    )
+
+    return out.sort_values("deviation_pp", key=lambda s: s.abs(), ascending=False)    return out.sort_values("deviation_pp", key=lambda s: s.abs(), ascending=False)
 
 def stress_test_estimate(real_df, scenario):
     if real_df is None or real_df.empty or real_df["market_value"].sum() <= 0:
