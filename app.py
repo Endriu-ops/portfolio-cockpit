@@ -764,7 +764,15 @@ def drift_monitor_table(real_df):
         return pd.DataFrame()
     cols = ["ticker","current_weight","target_weight","deviation_pp","action","trade_value"]
     out = real_df[cols].copy()
-    out["severity"] = np.where(abs(float(out["deviation_pp"])) >= 7, "HIGH",
+    out["severity"] = np.where(
+    out["deviation_pp"].abs() >= 7,
+    "HIGH",
+    np.where(
+        out["deviation_pp"].abs() >= 3,
+        "MEDIUM",
+        "LOW"
+    )
+)
                         np.where(abs(float(out["deviation_pp"])) >= 5, "MEDIUM", "LOW"))
     return out.sort_values("deviation_pp", key=lambda s: s.abs(), ascending=False)
 
