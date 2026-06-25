@@ -1,0 +1,14 @@
+ticker,shares,avg_price,manual_price,broker,note
+CMOD.MI,460.0,27.195,0,,Commodities
+RBOT.MI,428.0,18.26,0,,AI Robotics
+ZPRV,407.0,66.241,0,,Small Cap Value
+VUAA,203.0,108.4737,0,,SP500 Core
+MTHP.MI,193.0,73.1012,0,,Core Bond Lungo
+DFNS.MI,146.0,53.46,0,,Defense
+GDX.MI,110.0,85.01,0,,Gold Miners
+IBGS.MI,98.0,139.9,0,,Core Bond Breve
+SGLD.MI,70.974,208.48,0,,Gold
+SMH,46.0,101.18,0,,Tactical
+SXR8,10.419,588.85,0,,SP500 Legacy
+VWCE,4.0,161.97,0,,Global Equity
+BTC,0.126,70381.31,0,,BTC Spot
